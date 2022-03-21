@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 
 userSchema.pre('save', async function (next) {
@@ -72,6 +77,13 @@ userSchema.methods.correctPassword = async function (
 ) {
   return await bcrypt.compare(candidatePassword, userpassword);
 };
+
+userSchema.pre(/^find/, async function (next) {
+  // this points to the current query
+  // query: get collection that active are not equel to false;
+  this.find({ active: { $ne: false } });
+  next();
+});
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
