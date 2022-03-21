@@ -9,10 +9,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: [true, 'A username must be provided'],
     trim: true,
-    validate: [
-      validator.isAlpha,
-      'It must be only characters and not more than',
-    ],
   },
   email: {
     type: String,

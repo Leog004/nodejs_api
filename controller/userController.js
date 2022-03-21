@@ -1,10 +1,21 @@
-const fs = require('fs');
+const User = require('../models/userModel');
+const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
-const users = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/users.json`)
-);
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) {
+      newObj[el] = obj[el];
+    }
+  });
+  return newObj;
+};
 
-exports.getAllUsers = (req, res) => {
+exports.getAllUsers = catchAsync(async (req, res) => {
+  const users = await User.find();
+
   res.status(200).json({
     status: 'success',
     requestedAt: req.requestTime,
@@ -13,83 +24,25 @@ exports.getAllUsers = (req, res) => {
       users,
     },
   });
-};
+});
 
-exports.createUser = (req, res) => {
-  const newId = users[users.length - 1].id + 1;
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  const newUser = { id: newId, ...req.body };
-
-  users.push(newUser);
-
-  fs.writeFile(
-    `${__dirname}/dev-data/data/users.json`,
-    JSON.stringify(users),
-    () => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          user: newUser,
-        },
-      });
-    }
-  );
-};
-
-exports.getUser = (req, res) => {
-  const id = req.params.id * 1;
-
-  const user = users.find((el) => el.id === id);
-
-  if (!user) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'No tour was found',
-    });
+exports.updateMe = catchAsync(async (req, res, next) => {
+  // 1). Create an error if user posts password data
+  if (req.body.password || req.body.password) {
+    return next(new AppError('This password is not for password updates', 400));
   }
+  // 2). Update user document
+  const filteredBody = filterObj(req.body, 'name', 'email');
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user,
-    },
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true,
   });
-};
-
-exports.updateUser = (req, res) => {
-  const id = req.params.id * 1;
-
-  const user = users.find((el) => el.id === id);
-
-  if (!user) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'No tour was found',
-    });
-  }
 
   res.status(201).json({
     status: 'success',
     data: {
-      message: 'update is happening',
+      user: updatedUser,
     },
   });
-};
-
-exports.deleteUser = (req, res) => {
-  const id = req.params.id * 1;
-
-  const user = users.find((el) => el.id === id);
-
-  if (!user) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'No tour was found',
-    });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: null,
-  });
-};
+});
