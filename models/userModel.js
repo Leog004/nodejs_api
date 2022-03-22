@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const validator = require('validator');

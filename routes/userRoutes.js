@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const userController = require('../controller/userController');
 const authController = require('../controller/authController');
 
