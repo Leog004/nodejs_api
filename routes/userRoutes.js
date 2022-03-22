@@ -4,24 +4,29 @@ const authController = require('../controller/authController');
 
 const router = express.Router();
 
+// LOGIN | SIGNUP
 router.post('/signup', authController.signUp);
 router.post('/login', authController.login);
 
+// PASSWORD CONFIGURATION
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
-router.patch(
-  '/updateMyPassword',
-  authController.protect,
-  authController.updatePassword
-);
-router.patch('/updateMe', authController.protect, userController.updateMe);
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
 
+// USER MUST BE LOGGED IN
+router.use(authController.protect);
+router.patch('/updateMyPassword', authController.updatePassword);
+// SELF INFO || SELF UPDATE / DELETE
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
+
+// USER MUST BE LOGGED IN AND ADMIN TO VIEW THESE ROUTES
+router.use(authController.restrictTo('admin'));
+// CRUD OPERATIONS
 router.route('/').get(userController.getAllUsers);
-
 router
   .route('/:id')
-  .get(userController.getusers)
+  .get(userController.getUser)
   .patch(userController.updateUser)
   .delete(userController.deleteUser);
 
