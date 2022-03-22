@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -18,6 +19,9 @@ const reviewRouter = require('./routes/reviewRoutes');
 const app = express();
 
 // 1). MIDDLEWARE
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Set Security HTTP headers
 app.use(helmet());
 
@@ -55,8 +59,6 @@ app.use(
     ],
   })
 );
-// Serving static files
-app.use(express.static(`${__dirname}/public/`));
 
 // Time Logging
 app.use((req, res, next) => {
