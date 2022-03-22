@@ -22,10 +22,13 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf8')
 );
 
+const fulltours = JSON.parse(
+  fs.readFileSync(`${__dirname}/tours.json`, 'utf8')
+);
 // Import data int db
 const importData = async () => {
   try {
-    await Tour.create(tours);
+    await Tour.create(fulltours);
     console.log('Data succesfully loaded!');
     process.exit();
   } catch (error) {
